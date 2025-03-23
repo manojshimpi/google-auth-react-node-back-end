@@ -1,5 +1,5 @@
 const express = require("express");
-const { googleLogin, userinfo } = require("../controllers/authControllers");
+const { googleLogin, userinfo, registerUser, registerNormalUser, registerGoogleUser, loginUserNormal } = require("../controllers/authControllers");
 const isAuthenticated = require("../middleware/verifytoken");
 
 const authRouter = express.Router();
@@ -12,6 +12,17 @@ authRouter.get("/test", (req, res) => {
 // ✅ Use `POST` instead of `GET` for Google authentication
 authRouter.post("/google", googleLogin);
 
+authRouter.post("/normallogin", loginUserNormal);
+
+
+
+//Normally users will register here
+authRouter.post("/registernormal", registerNormalUser);
+
+//Google user registration
+//authRouter.post("/registergoogleuser", registerGoogleUser);
+
+//Ftechnical User Data
 authRouter.get("/user", isAuthenticated, userinfo);
 
 module.exports = authRouter;

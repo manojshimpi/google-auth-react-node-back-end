@@ -2,6 +2,7 @@ const axios = require("axios");
 const { oauth2Client } = require("./googleconfig");
 const UserModel = require("../models/UserModel");
 const jwt = require("jsonwebtoken");
+const { sendToken } = require("./sendtoken");
 
 /**
  * ✅ Global function to handle Google Authentication
@@ -23,7 +24,7 @@ const authenticateWithGoogle = async (code) => {
             `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`
         );
 
-        const { id, email, name, picture } = userRes.data; // Extract Google user details
+        const { id, email, name, picture} = userRes.data; // Extract Google user details
 
         // ✅ Check if user exists by Google ID
         let user = await UserModel.findOne({ googleId: id });
@@ -36,15 +37,22 @@ const authenticateWithGoogle = async (code) => {
         }
 
         // ✅ Generate JWT token
-        const token = jwt.sign(
+        /*const token = jwt.sign(
             { _id: user._id, googleId: user.googleId, email },process.env.JWT_SECRET,{ expiresIn: process.env.JWT_TIMEOUT || "12h" }
-        );
+        );*/
 
-        return { success: true, user, token };
+        const token = sendToken(user);
+        //console.log("I am Type " + user.type)
+        let  objmaster ={
+            type: user.type,
+            email: user.email
+        }
+        return { success: true, objmaster, token };
     } catch (error) {
         console.error("❌ Google Authentication Error:", error.message);
         return { success: false, error: error.message };
     }
 };
+
 
 module.exports = { authenticateWithGoogle };
