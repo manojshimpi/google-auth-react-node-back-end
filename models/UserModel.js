@@ -8,11 +8,13 @@ const UserSchema = new mongoose.Schema({
     },
     name: {
         type: String,
-        required: true
+        required: true,
+        
     },
     email: {
         type: String,
         required: true,
+        unique: true, 
     },
     image: {
         type: String
@@ -34,6 +36,30 @@ const UserSchema = new mongoose.Schema({
         type: String,
         enum: ['USER', 'ADMIN'],
         default: 'USER'
+    },
+    phone_number: {
+        type: String,
+        required: true, // If phone_number is a required field
+    },
+    country_name: {
+        type: String,
+        required: true, // If country_name is required
+    },
+    country_code: {
+        type: String,
+        required: true, // If country_code is required
+    },
+    dial_code: {
+        type: String,
+        required: true, // If dial_code is required
+    },
+    about: {
+        type: String,
+        required: true, // If about is required
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 

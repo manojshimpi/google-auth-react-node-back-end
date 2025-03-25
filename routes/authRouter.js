@@ -1,5 +1,5 @@
 const express = require("express");
-const { googleLogin, userinfo, registerUser, registerNormalUser, registerGoogleUser, loginUserNormal } = require("../controllers/authControllers");
+const { googleLogin, userinfo, registerUser, registerNormalUser, registerGoogleUser, loginUserNormal, updateUserProfile } = require("../controllers/authControllers");
 const isAuthenticated = require("../middleware/verifytoken");
 
 const authRouter = express.Router();
@@ -14,6 +14,8 @@ authRouter.post("/google", googleLogin);
 
 authRouter.post("/normallogin", loginUserNormal);
 
+
+authRouter.put("/updateprofile", isAuthenticated ,updateUserProfile);
 
 
 //Normally users will register here

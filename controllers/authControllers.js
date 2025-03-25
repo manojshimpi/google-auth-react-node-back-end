@@ -8,20 +8,30 @@ const { sendToken } = require("../utils/sendtoken");
 
 const registerNormalUser = async (req, res) => {
     try {
-        const { name, email, password, type } = req.body;
+        const { name, email, password, type, phoneNumber, countryName, countryCode, dialCode } = req.body;
         console.log("Registering normal user:", req.body);
-         
+
+        // Ensure the email is in lowercase for comparison
+        const normalizedEmail = email.toLowerCase();
+        console.log("Normalized Email:", normalizedEmail);
+
         // Check if email is already taken
-        const existingUser = await UserModel.findOne({ email });
+        const existingUser = await UserModel.findOne({ email: normalizedEmail });
 
         if (existingUser) {
-            return res.status(400).json({ message: 'Email is already registered' });
+            return res.status(400).json({ status:'400', message: 'Email is already registered' });
         }
 
         // Password validation
         if (password.length < 6) {
-            return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+            return res.status(400).json({ status: '400', message: 'Password must be at least 6 characters long' });
         }
+
+        // Phone number slicing logic
+        let phoneNumberSlice = phoneNumber.slice(3); // Removes the country code (first three characters)
+
+        let countryCode1 = "+";  // You might want to append the "+" before the dialCode
+        let dialCodeContact = `${countryCode1}${dialCode}`;
 
         // Hash the password before saving
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -29,8 +39,12 @@ const registerNormalUser = async (req, res) => {
         // Create a new user
         const newUser = new UserModel({
             name,
-            email,
+            email: normalizedEmail,  // Storing normalized email
             password: hashedPassword,
+            phone_number: phoneNumberSlice,  // Storing sliced phone number (without country code)
+            country_name: countryName,
+            country_code: countryCode,
+            dial_code: dialCodeContact,
             type: type || 'USER', // Default to 'USER' if not provided
         });
 
@@ -38,11 +52,65 @@ const registerNormalUser = async (req, res) => {
         await newUser.save();
 
         return res.status(201).json({
+            status: '201',
             message: 'User registered successfully',
             user: newUser,
         });
     } catch (error) {
         console.error('❌ User Registration Failed:', error.message);
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
+// Update User Profile Data
+
+const updateUserProfile = async (req, res) => {
+    console.log("Updating user profile data:", req.body);
+    try {
+        const { name, email, phone_number, country_name, country_code, dial_code , about} = req.body;
+        const userId = req.user.id; // Assuming the user ID is provided in the URL params
+
+        //console.log("Updating user data:", req.body);
+
+        // Ensure the email is in lowercase for comparison
+        const normalizedEmail = email.toLowerCase();
+        console.log("Normalized Email:", normalizedEmail);
+
+        // Find the user by ID
+        const user = await UserModel.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ status: '404', message: 'User not found' });
+        }
+
+        // Check if the email is being changed and if the new email is already registered
+        if (normalizedEmail !== user.email) {
+            const existingUser = await UserModel.findOne({ email: normalizedEmail });
+            if (existingUser) {
+                return res.status(400).json({ status: '400', message: 'Email is already registered' });
+            }
+        }
+
+        // Update the user details
+        user.name = name || user.name;
+        user.about = about || user.about;
+        user.email = normalizedEmail || user.email;
+        user.phone_number = phone_number || user.phone_number;
+        user.country_name = country_name || user.country_name;
+        user.country_code = country_code || user.country_code;
+        user.dial_code = dial_code || user.dial_code;
+
+        // Save the updated user data
+        await user.save();
+
+        return res.status(200).json({
+            status: '200',
+            message: 'User profile updated successfully',
+            user: user,
+        });
+    } catch (error) {
+        console.error('❌ User Update Failed:', error.message);
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
@@ -173,4 +241,4 @@ const userinfo = async (req, res) => {
     }
 };
 
-module.exports = { googleLogin, userinfo , registerNormalUser , loginUserNormal };
+module.exports = { googleLogin, userinfo , registerNormalUser , loginUserNormal , updateUserProfile};

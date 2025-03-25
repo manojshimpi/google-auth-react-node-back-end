@@ -156,6 +156,52 @@ const getContactsByUser = async (req, res) => {
 };
 
 
+
+const getcontactsByGroup = async (req, res) => {
+    try {
+        const { page = 1, name = '', email = '', mobile = '', category = '', status = 'active', sortBy = 'name', sortOrder = 'asc' } = req.query;
+
+        const limitNum = 25;
+        const pageNum = parseInt(page, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        const filter = { status: 'Active' };  // Only show active contacts
+        
+        if (name) filter.name = { $regex: name, $options: 'i' };
+        if (email) filter.email = { $regex: email, $options: 'i' };
+        if (category) filter.category = { $regex: category, $options: 'i' };
+        if (mobile) filter.mobile = { $regex: mobile, $options: 'i' };
+
+        const sort = {};
+        sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+
+        const contacts = await UserContact.find({ user: req.user._id, ...filter })
+            .skip(skip)
+            .limit(limitNum)
+            .sort(sort);
+
+        const totalContacts = await UserContact.countDocuments({ user: req.user._id, ...filter });
+
+        const totalPages = Math.ceil(totalContacts / limitNum);
+
+        res.status(200).json({
+            contacts,
+            pagination: {
+                currentPage: pageNum,
+                totalPages,
+                totalContacts,
+                limit: limitNum,
+            },
+        });
+    } catch (error) {
+        console.error("Error fetching contacts:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+
+
 const updatecontact = async (req, res) => {
     const { id } = req.params;
     const user_id = req.user._id;
@@ -312,4 +358,4 @@ const updatecontactstatusflag = async (req, res) => {
     }
 };
 
-module.exports = { addContact, getContactsByUser , updatecontact, deletecontact , getContactById, updatecontactstatusflag,isFavorite };
+module.exports = { addContact, getContactsByUser , updatecontact, deletecontact , getContactById, updatecontactstatusflag,isFavorite , getcontactsByGroup};
