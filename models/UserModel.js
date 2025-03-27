@@ -9,7 +9,6 @@ const UserSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        
     },
     email: {
         type: String,
@@ -56,6 +55,21 @@ const UserSchema = new mongoose.Schema({
     about: {
         type: String,
         required: true, // If about is required
+    },
+    profile_image : {
+        type: String
+    },
+    emailNotifications: {
+        type: Boolean,
+        default: false, // Default value set to false
+    },
+    birthdayNotifications: {
+        type: Boolean,
+        default: false, // Default value set to false
+    },
+    profileUpdateNotifications: {
+        type: Boolean,
+        default: false, // Default value set to false
     },
     createdAt: {
         type: Date,

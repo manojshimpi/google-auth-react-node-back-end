@@ -2,9 +2,9 @@ const UserContact = require("../models/UserContact");
 
 const addContact = async (req, res) => {
     try {
-        const { name, email, mobile, category } = req.body;
-
-        if (!name || !email || !mobile) {
+        const { name, email, mobile, category , phoneNumber, countryName, countryCode, dialCode } = req.body;
+        console.log("Adding contact:", req.body);
+        if (!name || !email || !phoneNumber) {
             return res.status(400).json({ status: '400', message: "Name, email, and mobile are required" });
         }
 
@@ -13,10 +13,7 @@ const addContact = async (req, res) => {
             return res.status(400).json({ status: '400', message: "Invalid email format" });
         }
 
-        const mobileRegex = /^[0-9]{10}$/;
-        if (!mobileRegex.test(mobile)) {
-            return res.status(400).json({ status: 400, message: "Invalid mobile number format" });
-        }
+       
 
         const duplicateContact = await UserContact.findOne({
             $or: [
@@ -35,6 +32,10 @@ const addContact = async (req, res) => {
             email,
             mobile,
             category,
+            mobile: phoneNumber,
+            countryName,
+            countryCode,
+            dialCode,
             user: req.user._id
         });
 
@@ -205,8 +206,8 @@ const getcontactsByGroup = async (req, res) => {
 const updatecontact = async (req, res) => {
     const { id } = req.params;
     const user_id = req.user._id;
-    const { name, email, mobile, category } = req.body;
-
+    const { name, email, mobile, category , countryName, countryCode, dialCode } = req.body;
+    //console.log("Updating contact:", req.body);
     try {
         if (!name || !email || !mobile) {
             return res.status(400).json({ status: '400', message: "Name, email, and mobile are required" });
@@ -217,10 +218,7 @@ const updatecontact = async (req, res) => {
             return res.status(400).json({ status: '400', message: "Invalid email format" });
         }
 
-        const mobileRegex = /^[0-9]{10}$/;
-        if (!mobileRegex.test(mobile)) {
-            return res.status(400).json({ status: '400', message: "Invalid mobile number format" });
-        }
+        
 
         const contact = await UserContact.findOne({ _id: id, user: user_id });
         if (!contact) {
@@ -232,6 +230,8 @@ const updatecontact = async (req, res) => {
             user: user_id,
             _id: { $ne: id }
         });
+
+       
 
         if (duplicateEmail) {
             return res.status(400).json({ status: '400', message: "A contact with the same email already exists." });
@@ -256,10 +256,13 @@ const updatecontact = async (req, res) => {
         if (duplicateName) {
             return res.status(400).json({ status: '400', message: "A contact with the same name already exists." });
         }
-
+        
         contact.name = name;
         contact.email = email;
-        contact.mobile = mobile;
+        contact.mobile = mobile,
+        contact.countryName = countryName,
+        contact.countryCode = countryCode,
+        contact.dialCode = dialCode
         contact.category = category;
 
         await contact.save();
@@ -358,4 +361,40 @@ const updatecontactstatusflag = async (req, res) => {
     }
 };
 
-module.exports = { addContact, getContactsByUser , updatecontact, deletecontact , getContactById, updatecontactstatusflag,isFavorite , getcontactsByGroup};
+
+// Get Toatl Conatcts By User
+const getTotalContacts = async (req, res) => {
+    try {
+        // Count the total number of contacts for the user
+        const totalContacts = await UserContact.countDocuments({ user: req.user._id });
+
+        res.status(200).json({
+            totalContacts,
+        });
+    } catch (error) {
+        console.error("Error fetching total contacts:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Get Total Contacts Favorite By User
+
+const getTotalFavoriteContacts = async (req, res) => {
+    try {
+        // Count the total number of favorite contacts for the user
+        const totalFavoriteContacts = await UserContact.countDocuments({ 
+            user: req.user._id, 
+            isFavorite: 'YES' 
+        });
+
+        res.status(200).json({
+            totalFavoriteContacts,
+        });
+    } catch (error) {
+        console.error("Error fetching total favorite contacts:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+module.exports = { addContact, getContactsByUser , updatecontact, deletecontact , getContactById, updatecontactstatusflag,isFavorite , getcontactsByGroup, getTotalContacts ,getTotalFavoriteContacts};

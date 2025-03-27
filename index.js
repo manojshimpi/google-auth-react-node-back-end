@@ -8,6 +8,7 @@ const winston = require('winston');
 const logger = require("./config/logger");
 const groupRouter = require("./routes/groupRouter");
 const contactAssignGroupRouter = require("./routes/contactAssignGroupRouter");
+const path = require('path');
 require("./models/dbConnection"); // Ensure this runs
 
 const app = express();
@@ -32,6 +33,10 @@ app.use((err, req, res, next) => {
     // Send a generic response
     res.status(500).json({ message: 'Something went wrong!' });
 });
+
+//app.use('./uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // ✅ Use auth routes correctly
 app.use("/auth", authRouter);

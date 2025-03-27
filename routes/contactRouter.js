@@ -1,4 +1,4 @@
-const { addContact, getContactsByUser, updatecontact, deletecontact, getContactById, updatecontactstatusflag, isFavorite, getcontactsByGroup } = require("../controllers/contactController");
+const { addContact, getContactsByUser, updatecontact, deletecontact, getContactById, updatecontactstatusflag, isFavorite, getcontactsByGroup, getTotalFavoriteContacts, getTotalContacts } = require("../controllers/contactController");
 const isAuthenticated = require("../middleware/verifytoken");
 
 const Routercontact = require("express").Router();
@@ -21,5 +21,10 @@ Routercontact.get("/getcontactById/:id", isAuthenticated, getContactById); // ht
 Routercontact.put("/updatecontactstatus/:id", isAuthenticated, updatecontactstatusflag); // http://localhost:5000/contacts/updatecontactstatus/67d3c588a34c8951eab08b1f
 //isFavorite
 Routercontact.put("/updatecontactisFavorite/:id", isAuthenticated, isFavorite); // http://localhost:5000/contacts/updatecontactisFavorite/67d3c588a34c8951eab08b1f
+
+Routercontact.get("/getFavoriteContact", isAuthenticated, getTotalFavoriteContacts); // http://localhost:5000/contacts/getContactTotalCount
+Routercontact.get("/getContactTotalCount", isAuthenticated, getTotalContacts); // http://localhost:5000/contacts/getContactTotalCount
+
+
 
 module.exports = Routercontact;

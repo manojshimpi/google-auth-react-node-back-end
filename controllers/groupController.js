@@ -192,5 +192,21 @@ const deletegroup = async (req, res) => {
     }
 };
 
-module.exports = { createGroup , getGroupsByUser , getGroupById , updateGroup , deletegroup , updategroupstatusflag};
+const getToatlGroupos = async (req, res) => {
+    try {
+        // Count the total number of favorite contacts for the user
+        const totalGroupsCounts = await Group.countDocuments({ 
+            user: req.user._id
+        });
+
+        res.status(200).json({
+            totalGroupsCounts,
+        });
+    } catch (error) {
+        console.error("Error fetching total groups:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+module.exports = { createGroup , getGroupsByUser , getGroupById , updateGroup , deletegroup , updategroupstatusflag , getToatlGroupos};
 
